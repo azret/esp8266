@@ -8,11 +8,9 @@ extern "C" {
 
 #define SSL_BUFF_SIZE 8192
 
-// Application::OnStart
-
 extern void ICACHE_FLASH_ATTR start();
 
-LOCAL volatile os_timer_t app_start_timer;
+LOCAL os_timer_t app_start_timer;
 
 LOCAL void ICACHE_FLASH_ATTR user_start_callback(void *arg)
 {
@@ -160,14 +158,14 @@ extern UartDevice UartDev;
 
 void user_rf_pre_init(void)
 {
+	system_set_os_print(0);
+
 	// This is a better place to init the UART to capture the SDK os_printf messages
 
 	UartDev.baut_rate = BIT_RATE_74880;
 
 	uart_div_modify(UART0, UART_CLK_FREQ / (UartDev.baut_rate));
 	uart_div_modify(UART1, UART_CLK_FREQ / (UartDev.baut_rate));
-
-	system_set_os_print(1);
 
 	os_printf("user_rf_pre_init();\n");
 }
@@ -225,7 +223,10 @@ uint32 ICACHE_FLASH_ATTR user_rf_cal_sector_set(void)
 
 void user_init(void)
 {
+	system_set_os_print(1);
+
 	system_init_done_cb(&user_init_callback);
+
 	os_printf("user_init();\n");
 }
 
