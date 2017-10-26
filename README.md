@@ -1,6 +1,6 @@
 # Windows Build Environment for ESP8266
 
-A standalone build environment for developing custom bootloaders & firmware for ESP8266 on Windows 
+A standalone build environment for developing custom bootloaders & firmware for ESP8266 on Windows.
 
 ```c
 #include "app.h"
