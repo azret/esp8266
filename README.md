@@ -11,7 +11,7 @@ void ICACHE_FLASH_ATTR start()
 }
 ```
 
-Navigate to the app directory and run **BUILD.bat**
+Run **BUILD.bat** to compile and flash the app.
 
 ### Links
 
