@@ -7,6 +7,8 @@ extern "C" {
 #define SAP_FACTORY_SSID "Alpha"
 #define SAP_FACTORY_PWD ""
 
+extern bool ICACHE_FLASH_ATTR serv(uint32 port);
+	
 LOCAL bool ICACHE_FLASH_ATTR wifi_set_softap(const char* ssid, const char* pwd) {
 
     if (ssid && os_strlen(ssid) > 0 && (os_strlen(ssid) > 31 || os_strlen(ssid) < 3)) {
@@ -131,6 +133,9 @@ LOCAL void ICACHE_FLASH_ATTR wifi_event_handler(void* arg) {
 		if (wifi_get_ip_info(SOFTAP_IF, &inf)) {
 			if (inf.ip.addr != 0) {
 				log("listen: %d.%d.%d.%d:80\n", ip2str4(inf.ip.addr));
+				if (!serv(80)) {
+					log("serv(%d) failed!\n", 80);
+				}
 			}
 		}
 
