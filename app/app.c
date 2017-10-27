@@ -124,21 +124,6 @@ LOCAL void ICACHE_FLASH_ATTR wifi_event_handler(void* arg) {
 		log("EVENT_SOFTAPMODE_STACONNECTED: \"%02X-%02X-%02X-%02X-%02X-%02X\"\n", MAC2STR(e->event_info.sta_connected.mac));
 		log("aid: %d\n", e->event_info.sta_connected.aid);
 
-		struct ip_info inf;
-
-		os_memset(
-			&inf,
-			0, sizeof(inf));
-
-		if (wifi_get_ip_info(SOFTAP_IF, &inf)) {
-			if (inf.ip.addr != 0) {
-				log("listen: %d.%d.%d.%d:80\n", ip2str4(inf.ip.addr));
-				if (!serv(80)) {
-					log("serv(%d) failed!\n", 80);
-				}
-			}
-		}
-
 		break;
 
 	case EVENT_STAMODE_CONNECTED:
@@ -158,7 +143,23 @@ LOCAL void ICACHE_FLASH_ATTR wifi_event_handler(void* arg) {
 
 	case EVENT_OPMODE_CHANGED:
 
-		log("EVENT_OPMODE_CHANGED\n");
+		log("EVENT_OPMODE_CHANGED: %d\n", e->event_info.opmode_changed.new_opmode);
+
+		struct ip_info inf;
+
+		os_memset(
+			&inf,
+			0, sizeof(inf));
+
+		if (wifi_get_ip_info(SOFTAP_IF, &inf)) {
+			if (inf.ip.addr != 0) {
+				log("listen: %d.%d.%d.%d:80\n", ip2str4(inf.ip.addr));
+				if (!serv(80)) {
+					log("serv(%d) failed!\n", 80);
+				}
+			}
+		}
+
 		break;
 		
 	default:
@@ -188,7 +189,7 @@ void ICACHE_FLASH_ATTR start()
 	}
 
 	log(
-		"MAC(SOFTAP_IF): \"%02X-%02X-%02X-%02X-%02X-%02X\"\n", MAC2STR(macaddr));
+		"MAC(STATION_IF): \"%02X-%02X-%02X-%02X-%02X-%02X\"\n", MAC2STR(macaddr));
 
 	/**
 	*/

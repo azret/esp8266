@@ -8,7 +8,7 @@ extern "C" {
 
 LOCAL void ICACHE_FLASH_ATTR writ(struct espconn *ptrespconn, char *pbuf, uint16 length) {
 
-    log("%s", pbuf);
+    log("%s\n", pbuf);
 
     espconn_sent(
         ptrespconn,

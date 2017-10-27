@@ -11,7 +11,7 @@ for %%i in ("%~dp0..") do set "root=%%~fi"
 @SET esptool=%root%\bin\esptool.exe
 @SET watch=%root%\bin\watch.exe
 
-@SET elf=%cd%
+@SET elf=%app%
 @IF %elf:~-1%==\ SET elf=%elf:~0,-1%
 @SET elf=%elf%\.elf
 @IF exist "%elf%" (
