@@ -174,60 +174,71 @@ void user_rf_pre_init(void)
 
 // Called by the SDK during pre-initialization
 
-uint32 user_rf_cal_sector_set(void)
-{
-	enum flash_size_map size_map = system_get_flash_size_map();
-	uint32 rf_cal_sec = 0;
+#define SPI_FLASH_SIZE_MAP 2
 
-	switch (size_map) {
-	case FLASH_SIZE_4M_MAP_256_256:
-		rf_cal_sec = 128 - 5;
-		os_printf("FLASH_SIZE_4M_MAP_256_256");
-		break;
+#if ((SPI_FLASH_SIZE_MAP == 0) || (SPI_FLASH_SIZE_MAP == 1))
+#error "The flash map is not supported"
+#elif (SPI_FLASH_SIZE_MAP == 2)
+#define SYSTEM_PARTITION_OTA_SIZE							0x6A000
+#define SYSTEM_PARTITION_OTA_2_ADDR							0x81000
+#define SYSTEM_PARTITION_RF_CAL_ADDR						0xfb000
+#define SYSTEM_PARTITION_PHY_DATA_ADDR						0xfc000
+#define SYSTEM_PARTITION_SYSTEM_PARAMETER_ADDR				0xfd000
+#elif (SPI_FLASH_SIZE_MAP == 3)
+#define SYSTEM_PARTITION_OTA_SIZE							0x6A000
+#define SYSTEM_PARTITION_OTA_2_ADDR							0x81000
+#define SYSTEM_PARTITION_RF_CAL_ADDR						0x1fb000
+#define SYSTEM_PARTITION_PHY_DATA_ADDR						0x1fc000
+#define SYSTEM_PARTITION_SYSTEM_PARAMETER_ADDR				0x1fd000
+#elif (SPI_FLASH_SIZE_MAP == 4)
+#define SYSTEM_PARTITION_OTA_SIZE							0x6A000
+#define SYSTEM_PARTITION_OTA_2_ADDR							0x81000
+#define SYSTEM_PARTITION_RF_CAL_ADDR						0x3fb000
+#define SYSTEM_PARTITION_PHY_DATA_ADDR						0x3fc000
+#define SYSTEM_PARTITION_SYSTEM_PARAMETER_ADDR				0x3fd000
+#elif (SPI_FLASH_SIZE_MAP == 5)
+#define SYSTEM_PARTITION_OTA_SIZE							0x6A000
+#define SYSTEM_PARTITION_OTA_2_ADDR							0x101000
+#define SYSTEM_PARTITION_RF_CAL_ADDR						0x1fb000
+#define SYSTEM_PARTITION_PHY_DATA_ADDR						0x1fc000
+#define SYSTEM_PARTITION_SYSTEM_PARAMETER_ADDR				0x1fd000
+#elif (SPI_FLASH_SIZE_MAP == 6)
+#define SYSTEM_PARTITION_OTA_SIZE							0x6A000
+#define SYSTEM_PARTITION_OTA_2_ADDR							0x101000
+#define SYSTEM_PARTITION_RF_CAL_ADDR						0x3fb000
+#define SYSTEM_PARTITION_PHY_DATA_ADDR						0x3fc000
+#define SYSTEM_PARTITION_SYSTEM_PARAMETER_ADDR				0x3fd000
+#else
+#error "The flash map is not supported"
+#endif
 
-	case FLASH_SIZE_8M_MAP_512_512:
-		rf_cal_sec = 256 - 5;
-		os_printf("FLASH_SIZE_8M_MAP_512_512");
-		break;
-
-	case FLASH_SIZE_16M_MAP_512_512:
-		os_printf("FLASH_SIZE_16M_MAP_512_512");
-		rf_cal_sec = 512 - 5;
-		break;
-
-	case FLASH_SIZE_16M_MAP_1024_1024:
-		os_printf("FLASH_SIZE_16M_MAP_1024_1024");
-		rf_cal_sec = 512 - 5;
-		break;
-
-	case FLASH_SIZE_32M_MAP_512_512:
-		os_printf("FLASH_SIZE_32M_MAP_512_512");
-		rf_cal_sec = 1024 - 5;
-		break;
-
-	case FLASH_SIZE_32M_MAP_1024_1024:
-		os_printf("FLASH_SIZE_32M_MAP_1024_1024");
-		rf_cal_sec = 1024 - 5;
-		break;
-
-	default:
-		os_printf("FLASH_SIZE_UNKNOWN: %d", size_map);
-		rf_cal_sec = 0;
-		break;
-	}
-
-	return rf_cal_sec;
-}
+static const partition_item_t at_partition_table[] = {
+	{ SYSTEM_PARTITION_BOOTLOADER, 						0x0, 												0x1000},
+	{ SYSTEM_PARTITION_OTA_1,   						0x1000, 											SYSTEM_PARTITION_OTA_SIZE},
+	{ SYSTEM_PARTITION_OTA_2,   						SYSTEM_PARTITION_OTA_2_ADDR, 						SYSTEM_PARTITION_OTA_SIZE},
+	{ SYSTEM_PARTITION_RF_CAL,  						SYSTEM_PARTITION_RF_CAL_ADDR, 						0x1000},
+	{ SYSTEM_PARTITION_PHY_DATA, 						SYSTEM_PARTITION_PHY_DATA_ADDR, 					0x1000},
+	{ SYSTEM_PARTITION_SYSTEM_PARAMETER, 				SYSTEM_PARTITION_SYSTEM_PARAMETER_ADDR, 			0x3000},
+};
 
 // Called by the SDK during initialization
 
-void user_init(void)
+void ICACHE_FLASH_ATTR user_pre_init(void)
+{
+	if (!system_partition_table_regist(at_partition_table, sizeof(at_partition_table) / sizeof(at_partition_table[0]), SPI_FLASH_SIZE_MAP)) {
+		os_printf("system_partition_table_regist fail\r\n");
+		while (1);
+	}
+}
+
+void ICACHE_FLASH_ATTR user_init(void)
 {
 	os_printf("\r\nSDK: v%s\r\n", system_get_sdk_version());
 	os_printf("Free Heap: %d\r\n", system_get_free_heap_size());
 	os_printf("CPU Frequency: %d MHz\r\n", system_get_cpu_freq());
 	os_printf("System Chip ID: %x\r\n", system_get_chip_id());
 	os_printf("SPI Flash ID: %x\r\n", spi_flash_get_id());
+	os_printf("Flash Size Map: %x\r\n", system_get_flash_size_map());
 
 	system_init_done_cb(&user_init_callback);
 }

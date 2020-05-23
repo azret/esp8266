@@ -5,7 +5,7 @@
 for %%i in ("%~dp0..") do set "root=%%~fi"
 
 @SET xtensa=%root%\bin\xtensa-lx106-elf-gcc
-@SET sdk=%root%\sdk\
+@SET sdk=D:\espressif\ESP8266_NONOS_SDK\
 @SET app=%root%\app
 @SET lib=%root%\lib
 @SET esptool=%root%\bin\esptool.exe
