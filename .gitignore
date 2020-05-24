@@ -12,3 +12,6 @@
 
 ![Bb]in/
 ![Oo]bj/
+/uart/uart/obj/Debug
+/uart/uart/obj/Release
+/uart/uart/bin/Debug

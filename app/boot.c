@@ -236,6 +236,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 	os_printf("\r\nSDK: v%s\r\n", system_get_sdk_version());
 	os_printf("Free Heap: %d\r\n", system_get_free_heap_size());
 	os_printf("CPU Frequency: %d MHz\r\n", system_get_cpu_freq());
+	os_printf("CyclesPerMicrosecond: %d\r\n", (int)(F_CPU / 1000000L));
 	os_printf("System Chip ID: %x\r\n", system_get_chip_id());
 	os_printf("SPI Flash ID: %x\r\n", spi_flash_get_id());
 	os_printf("Flash Size Map: %x\r\n", system_get_flash_size_map());

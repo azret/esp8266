@@ -170,7 +170,74 @@ LOCAL void ICACHE_FLASH_ATTR wifi_event_handler(void* arg) {
 	}
 }
 
-void ICACHE_FLASH_ATTR start() 
+LOCAL os_timer_t timer;
+
+//
+// void	system_adc_read_fast(uint16* adc_addr, uint16	adc_num, uint8
+// 	adc_clk_div)
+// 	Parameter
+// 	uint16* adc_addr: point to the address of ADC continuously fast sampling
+// 	output.
+// 	uint16	adc_num : sampling number of ADC continuously fast sampling; range[1,
+// 	65535].
+// 	uint8	adc_clk_div : ADC wor
+
+void ICACHE_FLASH_ATTR	ADC_TEST(void* p)
+{
+	os_timer_disarm(&timer);
+
+	os_timer_setfn(&timer, ADC_TEST, NULL);
+	
+	ets_intr_lock();		 //close	interrupt
+
+	uint16	adc_num = 1024;
+
+	uint16	adc_addr[adc_num];
+
+	// uint16* pbuf =
+	// 	(uint16*)os_malloc(adc_num * 16);
+	// 
+	// os_memset(
+	// 	pbuf,
+	// 	0, adc_num * 16);
+	 
+	uint8	adc_clk_div = 16;
+
+	uint32	i;
+
+	os_printf("Free Heap: %d\r\n", system_get_free_heap_size());
+
+	system_adc_read_fast(adc_addr, adc_num, adc_clk_div);
+
+	os_printf("1024 [");
+
+	for (i = 0; i < adc_num; i++)
+	{
+		if (i == 0) {
+			os_printf("%d", adc_addr[i]);
+		}
+		else {
+			os_printf(", %d", adc_addr[i]);
+		}
+	}
+
+	os_printf("]\r\n"); 
+
+	ets_intr_unlock();	 	 //open	interrupt
+
+	os_timer_arm(&timer, 10, 1);
+}
+ 
+void ICACHE_FLASH_ATTR start()
+{
+	log("\n");
+
+	ADC_TEST(NULL);
+
+	log("\n\nstarted!\n\n");
+}
+
+void ICACHE_FLASH_ATTR start_with_wifi() 
 {
 	log("\n");
 
@@ -229,7 +296,7 @@ void ICACHE_FLASH_ATTR start()
 		return;
 	}
 
-    log("\nstarted!\n");
+    log("\n\nstarted!\n\n");
 }
 
 #ifdef __cplusplus

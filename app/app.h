@@ -10,6 +10,7 @@ extern "C" {
 #include "ip_addr.h"
 #include "user_config.h"
 #include "c_types.h"
+#include "os_type.h" // TIMER
 #include "osapi.h"
 #include "mem.h"
 #include "user_interface.h"
