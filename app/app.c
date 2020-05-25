@@ -170,71 +170,142 @@ LOCAL void ICACHE_FLASH_ATTR wifi_event_handler(void* arg) {
 	}
 }
 
-LOCAL os_timer_t timer;
+/*
+volatile uint32_t* const esp8266_gpioToFn[16] = { &GPF0, &GPF1, &GPF2, &GPF3, &GPF4, &GPF5, &GPF6, &GPF7, &GPF8, &GPF9, &GPF10, &GPF11, &GPF12, &GPF13, &GPF14, &GPF15 };
 
-//
-// void	system_adc_read_fast(uint16* adc_addr, uint16	adc_num, uint8
-// 	adc_clk_div)
-// 	Parameter
-// 	uint16* adc_addr: point to the address of ADC continuously fast sampling
-// 	output.
-// 	uint16	adc_num : sampling number of ADC continuously fast sampling; range[1,
-// 	65535].
-// 	uint8	adc_clk_div : ADC wor
+LOCAL void ICACHE_FLASH_ATTR __pinMode(uint8_t pin, uint8_t mode) {
+    if (pin < 16) {
+        if (mode == SPECIAL) {
+            GPC(pin) = (GPC(pin) & (0xF << GPCI)); //SOURCE(GPIO) | DRIVER(NORMAL) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
+            GPEC = (1 << pin); //Disable
+            GPF(pin) = GPFFS(GPFFS_BUS(pin));//Set mode to BUS (RX0, TX0, TX1, SPI, HSPI or CLK depending in the pin)
+            if (pin == 3) GPF(pin) |= (1 << GPFPU);//enable pullup on RX
+        }
+        else if (mode & FUNCTION_0) {
+            GPC(pin) = (GPC(pin) & (0xF << GPCI)); //SOURCE(GPIO) | DRIVER(NORMAL) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
+            GPEC = (1 << pin); //Disable
+            GPF(pin) = GPFFS((mode >> 4) & 0x07);
+            if (pin == 13 && mode == FUNCTION_4) GPF(pin) |= (1 << GPFPU);//enable pullup on RX
+        }
+        else if (mode == OUTPUT || mode == OUTPUT_OPEN_DRAIN) {
+            GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
+            GPC(pin) = (GPC(pin) & (0xF << GPCI)); //SOURCE(GPIO) | DRIVER(NORMAL) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
+            if (mode == OUTPUT_OPEN_DRAIN) GPC(pin) |= (1 << GPCD);
+            GPES = (1 << pin); //Enable
+        }
+        else if (mode == INPUT || mode == INPUT_PULLUP) {
+            GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
+            GPEC = (1 << pin); //Disable
+            GPC(pin) = (GPC(pin) & (0xF << GPCI)) | (1 << GPCD); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
+            if (mode == INPUT_PULLUP) {
+                GPF(pin) |= (1 << GPFPU);  // Enable  Pullup
+            }
+        }
+        else if (mode == WAKEUP_PULLUP || mode == WAKEUP_PULLDOWN) {
+            GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
+            GPEC = (1 << pin); //Disable
+            if (mode == WAKEUP_PULLUP) {
+                GPF(pin) |= (1 << GPFPU);  // Enable  Pullup
+                GPC(pin) = (1 << GPCD) | (4 << GPCI) | (1 << GPCWE); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(LOW) | WAKEUP_ENABLE(ENABLED)
+            }
+            else {
+                GPF(pin) |= (1 << GPFPD);  // Enable  Pulldown
+                GPC(pin) = (1 << GPCD) | (5 << GPCI) | (1 << GPCWE); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(HIGH) | WAKEUP_ENABLE(ENABLED)
+            }
+        }
+    }
+    else if (pin == 16) {
+        GPF16 = GP16FFS(GPFFS_GPIO(pin));//Set mode to GPIO
+        GPC16 = 0;
+        if (mode == INPUT || mode == INPUT_PULLDOWN_16) {
+            if (mode == INPUT_PULLDOWN_16) {
+                GPF16 |= (1 << GP16FPD);//Enable Pulldown
+            }
+            GP16E &= ~1;
+        }
+        else if (mode == OUTPUT) {
+            GP16E |= 1;
+        }
+    }
+}
+
+LOCAL void ICACHE_FLASH_ATTR __digitalWrite(uint8_t pin, uint8_t val) {
+    if (pin < 16) {
+        if (val) GPOS = (1 << pin);
+        else GPOC = (1 << pin);
+    }
+    else if (pin == 16) {
+        if (val) GP16O |= 1;
+        else GP16O &= ~1;
+    }
+}
+
+LOCAL int ICACHE_FLASH_ATTR __digitalRead(uint8_t pin) {
+    if (pin < 16) {
+        return GPIP(pin);
+    }
+    else if (pin == 16) {
+        return GP16I & 0x01;
+    }
+    return 0;
+}
+*/
+
+LOCAL os_timer_t timer;
 
 void ICACHE_FLASH_ATTR	ADC_TEST(void* p)
 {
-	os_timer_disarm(&timer);
+    os_timer_disarm(&timer);
 
-	os_timer_setfn(&timer, ADC_TEST, NULL);
-	
-	ets_intr_lock();		 //close	interrupt
+    os_timer_setfn(&timer, ADC_TEST, NULL);
 
-	uint16	adc_num = 1024;
+    ets_intr_lock();		 //close	interrupt
 
-	uint16	adc_addr[adc_num];
+    uint16	adc_num = 1024;
 
-	// uint16* pbuf =
-	// 	(uint16*)os_malloc(adc_num * 16);
-	// 
-	// os_memset(
-	// 	pbuf,
-	// 	0, adc_num * 16);
-	 
-	uint8	adc_clk_div = 16;
+    uint16	adc_addr[adc_num];
 
-	uint32	i;
+    // uint16* pbuf =
+    // 	(uint16*)os_malloc(adc_num * 16);
+    // 
+    // os_memset(
+    // 	pbuf,
+    // 	0, adc_num * 16);
 
-	os_printf("Free Heap: %d\r\n", system_get_free_heap_size());
+    uint8	adc_clk_div = 16;
 
-	system_adc_read_fast(adc_addr, adc_num, adc_clk_div);
+    uint32	i;
 
-	os_printf("1024 [");
+    os_printf("Free Heap: %d\r\n", system_get_free_heap_size());
 
-	for (i = 0; i < adc_num; i++)
-	{
-		if (i == 0) {
-			os_printf("%d", adc_addr[i]);
-		}
-		else {
-			os_printf(", %d", adc_addr[i]);
-		}
-	}
+    system_adc_read_fast(adc_addr, adc_num, adc_clk_div);
 
-	os_printf("]\r\n"); 
+    os_printf("1024 [");
 
-	ets_intr_unlock();	 	 //open	interrupt
+    for (i = 0; i < adc_num; i++)
+    {
+        if (i == 0) {
+            os_printf("%d", adc_addr[i]);
+        }
+        else {
+            os_printf(", %d", adc_addr[i]);
+        }
+    }
 
-	os_timer_arm(&timer, 10, 1);
+    os_printf("]\r\n");
+
+    ets_intr_unlock();	 	 //open	interrupt
+
+    os_timer_arm(&timer, 10, 1);
 }
- 
+
 void ICACHE_FLASH_ATTR start()
 {
-	log("\n");
+    log("\n");
 
-	ADC_TEST(NULL);
+    ADC_TEST(NULL);
 
-	log("\n\nstarted!\n\n");
+    log("\n\nstarted!\n\n");
 }
 
 void ICACHE_FLASH_ATTR start_with_wifi() 
