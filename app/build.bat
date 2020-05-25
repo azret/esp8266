@@ -47,8 +47,7 @@ for %%i in ("%~dp0..") do set "root=%%~fi"
 
 @IF [%FLASH%] EQU [1] (
 
-    "%esptool%" -v -cb 921600 -cp COM3 -cf "%app%\.elf\0x00000.bin" 
-    REM -ca 0x10000 -cf "%app%\.elf\0x10000.bin"
+    "%esptool%" -v -cb 921600 -cp COM3 -cf "%app%\.elf\0x00000.bin" -ca 0x10000 -cf "%app%\.elf\0x10000.bin"
     @IF %ERRORLEVEL% GTR 0 @GOTO FAIL
 
     "%watch%" --port COM3 --baud 74880"

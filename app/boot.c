@@ -156,20 +156,6 @@ extern UartDevice UartDev;
 
 // Called by the SDK during pre-initialization
 
-void user_rf_pre_init(void)
-{
-	system_set_os_print(1);
-
-	// This is a better place to init the UART to capture the SDK os_printf messages
-
-	UartDev.baut_rate = BIT_RATE_74880;
-
-	uart_div_modify(UART0, UART_CLK_FREQ / (UartDev.baut_rate));
-	uart_div_modify(UART1, UART_CLK_FREQ / (UartDev.baut_rate));
-
-	os_printf("rf_pre_init();\n");
-}
-
 #include "ets_sys.h" 
 
 // Called by the SDK during pre-initialization
@@ -233,10 +219,18 @@ void ICACHE_FLASH_ATTR user_pre_init(void)
 
 void ICACHE_FLASH_ATTR user_init(void)
 {
+	system_set_os_print(1);
+
+	// This is a better place to init the UART to capture the SDK os_printf messages
+
+	UartDev.baut_rate = BIT_RATE_74880;
+
+	uart_div_modify(UART0, UART_CLK_FREQ / (UartDev.baut_rate));
+	uart_div_modify(UART1, UART_CLK_FREQ / (UartDev.baut_rate));
+
 	os_printf("\r\nSDK: v%s\r\n", system_get_sdk_version());
 	os_printf("Free Heap: %d\r\n", system_get_free_heap_size());
 	os_printf("CPU Frequency: %d MHz\r\n", system_get_cpu_freq());
-	os_printf("CyclesPerMicrosecond: %d\r\n", (int)(F_CPU / 1000000L));
 	os_printf("System Chip ID: %x\r\n", system_get_chip_id());
 	os_printf("SPI Flash ID: %x\r\n", spi_flash_get_id());
 	os_printf("Flash Size Map: %x\r\n", system_get_flash_size_map());
