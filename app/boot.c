@@ -101,6 +101,8 @@ void ICACHE_FLASH_ATTR user_pre_init(void)
 
 	system_set_os_print(1);
 
+	system_phy_freq_trace_enable(1);
+
 	if (!system_partition_table_regist(at_partition_table, sizeof(at_partition_table) / sizeof(at_partition_table[0]), SPI_FLASH_SIZE_MAP)) {
 		os_printf("system_partition_table_regist fail\r\n");
 		while (1);
@@ -137,7 +139,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 
 	os_printf("wifi_get_opmode(): \"%d\"\n", wifi_get_opmode());
 
-	// system_init_done_cb(&user_init_callback);
+	system_init_done_cb(&user_init_callback);
 }
 
 #ifdef __cplusplus

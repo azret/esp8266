@@ -6,6 +6,22 @@ extern "C" {
 
 #include "app.h"
 
+
+    LOCAL void ICACHE_FLASH_ATTR
+        digitalWrite(uint8_t pin, uint8_t state) {
+        if (state) {
+            GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << pin); // set GPIO pin high
+        }
+        else {
+            GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << pin); // set GPIO pin low
+        }
+    }
+
+    LOCAL int ICACHE_FLASH_ATTR
+        digitalRead(uint8_t pin) {
+        return (GPIO_REG_READ(GPIO_OUT_ADDRESS) >> pin) & 1;
+    }
+
 LOCAL void ICACHE_FLASH_ATTR writ(struct espconn *ptrespconn, char *pbuf, uint16 length) {
 
     os_printf("%s\n", pbuf);
@@ -115,17 +131,28 @@ LOCAL void ICACHE_FLASH_ATTR statu(void *arg) {
 
     uint8 st = wifi_station_get_connect_status();
 
+    if (digitalRead(2)) {   
+        digitalWrite(2, 0);  
+        os_printf("digitalWrite(%d, LOW)\n", 2);    
+    }
+    else { 
+        digitalWrite(2, 1); 
+        os_printf("digitalWrite(%d, HIGH)\n", 2);    
+    }
+
     os_sprintf((char*)(content + os_strlen((const char*)content)),
         "{\r\n"
         "   station: {\r\n"
         "       mac: \"%02X-%02X-%02X-%02X-%02X-%02X\",\r\n"
         "       ssid: \"%s\",\r\n"
+        "       GPIO2: \"%d\",\r\n"
         "       ip: \"%d.%d.%d.%d\",\r\n"
         "       status: \"%s\"\r\n"
         "   }\r\n"
         "}",
         MAC2STR(wifi_station_macaddr),
         wifi_station_settings.ssid,
+        digitalRead(2),
         ip2str4(wifi_station_ip_info.ip.addr),
         STATUS2STR(st)
     );

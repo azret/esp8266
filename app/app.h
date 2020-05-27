@@ -18,6 +18,9 @@ extern "C" {
 #include "pwm.h"
 #include "gpio.h"	
 
+#define SAP_FACTORY_SSID "Alpha"
+#define SAP_FACTORY_PWD ""
+
 #define INPUT             0x00
 #define INPUT_PULLUP      0x02
 #define INPUT_PULLDOWN_16 0x04 // PULLDOWN only possible for pin16
