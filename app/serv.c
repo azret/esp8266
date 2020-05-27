@@ -8,7 +8,7 @@ extern "C" {
 
 LOCAL void ICACHE_FLASH_ATTR writ(struct espconn *ptrespconn, char *pbuf, uint16 length) {
 
-    log("%s\n", pbuf);
+    os_printf("%s\n", pbuf);
 
     espconn_sent(
         ptrespconn,
@@ -212,12 +212,12 @@ LOCAL void ICACHE_FLASH_ATTR recv(void *arg, char *precv, unsigned short length)
 
     struct espconn *ptrespconn = (struct espconn*)arg;
 
-    log("[recv] %d.%d.%d.%d:%d\n", ptrespconn->proto.tcp->remote_ip[0],
+    os_printf("[recv] %d.%d.%d.%d:%d\n", ptrespconn->proto.tcp->remote_ip[0],
         ptrespconn->proto.tcp->remote_ip[1], ptrespconn->proto.tcp->remote_ip[2],
         ptrespconn->proto.tcp->remote_ip[3], ptrespconn->proto.tcp->remote_port);
 
-    log("%u\n", length);
-    log("%s\n", precv);
+    os_printf("%u\n", length);
+    os_printf("%s\n", precv);
 
     char* get = (char *)os_strstr(precv, "GET / HTTP/1.");
 
@@ -267,7 +267,7 @@ LOCAL void ICACHE_FLASH_ATTR recon(void *arg, sint8 err) {
 
     struct espconn *pesp_conn = (struct espconn*)arg;
 
-    log("recon %d.%d.%d.%d:%d err %d\n", pesp_conn->proto.tcp->remote_ip[0],
+    os_printf("recon %d.%d.%d.%d:%d err %d\n", pesp_conn->proto.tcp->remote_ip[0],
         pesp_conn->proto.tcp->remote_ip[1], pesp_conn->proto.tcp->remote_ip[2],
         pesp_conn->proto.tcp->remote_ip[3], pesp_conn->proto.tcp->remote_port, err);
 
@@ -277,7 +277,7 @@ LOCAL void ICACHE_FLASH_ATTR discon(void *arg) {
 
     struct espconn *pesp_conn = (struct espconn*)arg;
 
-    log("discon %d.%d.%d.%d:%d\n", pesp_conn->proto.tcp->remote_ip[0],
+    os_printf("discon %d.%d.%d.%d:%d\n", pesp_conn->proto.tcp->remote_ip[0],
         pesp_conn->proto.tcp->remote_ip[1], pesp_conn->proto.tcp->remote_ip[2],
         pesp_conn->proto.tcp->remote_ip[3], pesp_conn->proto.tcp->remote_port);
 
@@ -291,7 +291,7 @@ LOCAL void ICACHE_FLASH_ATTR accept(void *arg) {
     espconn_regist_reconcb(pesp_conn, recon);
     espconn_regist_disconcb(pesp_conn, discon);
 
-    log("accept %d.%d.%d.%d:%d\n", pesp_conn->proto.tcp->remote_ip[0],
+    os_printf("accept %d.%d.%d.%d:%d\n", pesp_conn->proto.tcp->remote_ip[0],
         pesp_conn->proto.tcp->remote_ip[1], pesp_conn->proto.tcp->remote_ip[2],
         pesp_conn->proto.tcp->remote_ip[3], pesp_conn->proto.tcp->remote_port);
 
@@ -302,7 +302,7 @@ bool ICACHE_FLASH_ATTR serv(uint32 port) {
     uint8 mod = wifi_get_opmode();
 
     if (mod != STATION_MODE && mod != SOFTAP_MODE && mod != STATIONAP_MODE) {
-        log("wifi mode is not configured!");
+        os_printf("wifi mode is not configured!");
         return false;
     }
 
@@ -316,7 +316,7 @@ bool ICACHE_FLASH_ATTR serv(uint32 port) {
     espconn_regist_connectcb(&esp_conn, accept);
     espconn_accept(&esp_conn);
 
-    log("serv %d.%d.%d.%d:%d\n", esp_conn.proto.tcp->local_ip[0],
+    os_printf("serv %d.%d.%d.%d:%d\n", esp_conn.proto.tcp->local_ip[0],
         esp_conn.proto.tcp->local_ip[1], esp_conn.proto.tcp->local_ip[2],
         esp_conn.proto.tcp->local_ip[3], esp_conn.proto.tcp->local_port);
 
